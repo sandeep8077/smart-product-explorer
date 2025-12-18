@@ -6,6 +6,7 @@ import Search from "../components/Search";
 import { productSelector } from "../features/products/productSlice";
 import { useDeferredValue } from "react";
 import Filter from "../components/Filter";
+import Sorting from "../components/Sorting";
 
 function Home() {
   const { isLoading, error } = useSelector((state) => state.product);
@@ -13,6 +14,7 @@ function Home() {
   const [search,setSearch] = useState("");
   const products = useSelector(productSelector);
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortBy,setSortBy] = useState("HighToLow");
 
   const deferredSearch = useDeferredValue(search);
 
@@ -39,6 +41,23 @@ function Home() {
     );
   
 
+    // sorting items 
+    let finalProduct = [...fillteredProducts]
+
+    switch(sortBy){
+      case "lowToHigh":
+        finalProduct.sort((a,b)=>a.price - b.price);
+        break;
+      case "highToLow":
+        finalProduct.sort((a,b)=>b.price - a.price);
+        break;
+      case "rating":
+        finalProduct.sort((a,b)=>b.rating.rate - a.rating.rate);
+        break;
+      default:
+        break;
+    }
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -58,6 +77,7 @@ function Home() {
             Updating results...
          </p>
 )}
+     <Sorting sortBy={sortBy} setSortBy={setSortBy} rating="3" />
 
       {/* Loading State */}
       {isLoading && (
@@ -74,7 +94,7 @@ function Home() {
       )}
 
       {/* Product List */}
-      {!isLoading && !error && <ProductLIst products={fillteredProducts} />}
+      {!isLoading && !error && <ProductLIst products={finalProduct} />}
 
       <h3>Totel Products:{fillteredProducts.length}</h3>
     </div>
