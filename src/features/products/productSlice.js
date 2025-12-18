@@ -1,6 +1,8 @@
 import {createSlice} from '@reduxjs/toolkit';
 import { fetchProductsApi } from '../../services/productApi';
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { removeFavoriteApi, saveFavoriteApi } from '../../services/favoriteApi';
+import { act } from 'react';
 
 
 
@@ -12,10 +14,23 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
     }
  )
 
+ export const saveAsyncFavoriteApi = createAsyncThunk('products/saveFavorite',
+     async (id) =>{
+        return  saveFavoriteApi(id)
+     }
+ )
+
+ export const removeAsyncFavoriteApi = createAsyncThunk('products/removeFavorite',async(id)=>{
+    return removeFavoriteApi(id);
+ }
+    
+ )
+
 const initialState = {
     products:[],
     error:null,
-    isLoading:false
+    isLoading:false,
+    favorites:[],
 }
 
 
@@ -25,6 +40,13 @@ const productSlice = createSlice({
     name:'product',
     initialState,
     reducers:{
+        addFavorites(state,action){
+
+            state.favorites.push(action.payload)
+        },
+        removeFavorite(state,action){
+            state.favorites = state.favorites.filter((id)=>id !== action.payload);
+        }
 
     },
     extraReducers:(builder)=>{
@@ -41,6 +63,13 @@ const productSlice = createSlice({
             state.isLoading = false;
             state.error = action.error.message;
         })
+        .addCase(saveAsyncFavoriteApi.rejected,(state,action)=>{
+            state.favorites  = state.favorites.filter((id)=> id !== action.payload);
+        })
+        .addCase(removeAsyncFavoriteApi.rejected,(state,action)=>{
+            state.favorites.push(action.payload)
+
+        })
     }
 
     
@@ -49,6 +78,8 @@ const productSlice = createSlice({
 )
 
 export const productSelector = (state)=>state.product.products;
+export const favoriteSelector = (state)=>state.product.favorites;
+export const {addFavorites,removeFavorite}  = productSlice.actions;
 export default productSlice.reducer;
 
 
